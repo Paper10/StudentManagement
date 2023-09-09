@@ -1,0 +1,108 @@
+{% extends "student_base/base_with_navbar.html" %}
+
+{% load static %}
+
+{% block title %}{{ user.nickname }} | Student{% endblock title %}
+
+{% block content %}
+<main class="site-body">
+  <div class="content-list max-content-width">
+    <div class="header">
+      <h2>{{ user.nickname }} 선생님의 그룹</h2>
+      <a class="cp-ic-button circle newreview" href="{% url 'group-set' %}">그룹 생성</a>
+    </div>
+
+    <div>
+      {% for group in user_groups%}
+      <div class="profile-header">
+        <div class="content max-content-width">
+          <div class="cp-avatar large profile-pic" style="background-image: url('{{ group.group_pic.url }}')"></div>
+          <div class="info">
+            <h1 class="username">{{ group.group_name }}</h1>
+            {% if group.description %}
+            <div>
+              <p class="cp-chip intro">{{ group.description }}</p>
+            </div>
+            {% endif %}
+            <a class="edit" href="{% url 'group-update' group.id %}">
+              <img class="cp-icon small" src="{% static 'student/icons/ic-pen.svg' %}" alt="Pen Icon">
+                그룹 정보 수정
+              </a>
+          </div>
+        </div>
+      </div>
+      <div class="profile-header">
+        <div class="content max-content-width">
+          <div class="header">
+            <h2> {{ group.group_name }} 반 학생들 </h2>
+          </div>
+          {% for student in users%}
+          {% if student.group_in == group %}
+          <h3>{{ student.nickname }}({{ student.username }}),</h3>
+          {% endif %}
+          {% endfor %}
+        </div>
+        <form method="post" action="{% url 'user-register' %}">
+          {% csrf_token %}
+          <select name="user_to_change_group">
+            {% for student in users %}
+            {% if not student.teacher %}
+              <option value="{{ student.id }}">{{ student.username }}</option>
+            {% endif %}
+            {% endfor %}
+          </select>
+          <input type="hidden" name="new_group" value="{{ group.id }}">
+          <button type="submit">학생을 현재 반으로 변경</button>
+        </form>
+      </div>
+      <div class="profile-header">
+        <div class="content max-content-width">
+          <div class="header">
+            <h2> {{ group.group_name }} 반 학생들의 모르는 문제 </h2>
+          </div>
+          {% for problem in problems%}
+          {% if problem.group == group %}
+          <h3>{{ problem.number }}번,</h3>
+          {% endif %}
+          {% endfor %}
+        </div>
+        <form method="post" action="{% url 'delete-problems' %}">
+          {% csrf_token %}
+          <input type="hidden" name="group_id" value="{{ group.id }}">
+          <button type="submit">문제 초기화</button>
+        </form>
+      </div>
+      
+
+      {% empty %}
+      <p class="empty">아직 그룹이 없습니다</p>
+      {% endfor %}
+
+      {% if is_paginated %}
+        <footer>
+          <ul class="pagination">
+            {% if page_obj.has_previous %}
+              <li><a href="?page=1">처음</a></li>
+              <li><a href="?page={{ page_obj.previous_page_number }}">이전</a></li>
+            {% endif %}
+
+            {% for num in page_obj.paginator.page_range %}
+              {% if page_obj.number == num %}
+                <li class="current">{{ num }}</li>
+              {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                <li><a href="?page={{ num }}">{{ num }}</a></li>
+              {% endif %}
+            {% endfor %}
+
+            {% if page_obj.has_next %}
+              <li><a href="?page={{ page_obj.next_page_number }}">다음</a></li>
+              <li><a href="?page={{ page_obj.paginator.num_pages }}">마지막</a></li>
+            {% endif %}
+          </ul>
+        </footer>
+      {% endif %}
+    </div>
+    
+  </div>
+</main>
+{% endblock content %}

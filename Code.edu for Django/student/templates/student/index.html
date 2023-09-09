@@ -1,0 +1,111 @@
+{% extends "student_base/base_with_navbar.html" %}
+
+{% load static %}
+
+{% block title %}{{ user.nickname }} | Student{% endblock title %}
+
+{% block content %}
+<main class="site-body">
+  <div class="profile-header">
+    <div class="content max-content-width">
+      <div class="cp-avatar large profile-pic" style="background-image: url('{{ user.group_in.group_pic.url }}')"></div>
+      <div class="info">
+        <h1 class="username">{{ user.group_in.group_name }}</h1>
+        {% if user.group_in.description %}
+          <div>
+            <p class="cp-chip intro">{{ user.group_in.description }}</p>
+          </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  {% if not user.teacher %}
+  <div class="profile-header">
+    <div class="content max-content-width">
+      <form method="POST" action="{% url 'submit-problem' %}">
+      {% csrf_token %}
+      <div>
+        {% for number in numbers %}
+            <label style="color: orange; font-size: 18px;">
+              [{{ number }}
+              <input style="width: 19px; height: 19px;" type="checkbox" name="numbers" value="{{ number }}">]  
+            </label>
+        {% endfor %}
+    </div>
+    
+        <div>
+          <button class="cp-button submit" type="submit">질문 제출</button>
+        </div>
+      </form>
+    </div>
+  </div>
+  <div class="profile-header">
+    <div class="content max-content-width">
+      <div class="header">
+        <h2> {{ user.group_in.group_name }} 반 학생들의 모르는 문제 :  </h2>
+      </div>
+      {% for problem in problems%}
+      {% if problem.group == user.group_in %}
+      <h3>{{ problem.number }}번,</h3>
+      {% endif %}
+      {% endfor %}
+    </div>
+  </div>
+  {% endif %}
+
+  <div class="content-list max-content-width">
+    <div class="header">
+      <h2>질문 목록</h2>
+      <a class="cp-ic-button circle newreview" href="{% url 'question-create' %}">질문 작성</a>
+    </div>
+
+      <div class="contents">
+      {% for question in questions %}
+        <a href="{% url 'question-detail' question.id %}">
+            <section class="cp-card content">
+              <div class="thumb" style="background-image: url('{{ question.image1.url }}');"></div>
+              <div class="body">
+                <h2 class="title">{{ question.title }}</h2>
+                <date class="date">{{ question.dt_created|date:"Y년 n월 j일" }}</date>
+                <div class="metadata">
+                  <div class="question-author">
+	                  <div class="cp-avatar" style="background-image: url('{{ question.author.profile_pic.url }}')"></div>
+                    <span>{{ question.author.nickname }}</span>
+                  </div>
+                </div>
+              </div>
+            </section>
+          </a>
+      {% empty %}
+        <p class="empty">아직 질문이 없어요 :(</p>
+      {% endfor %}
+      </div>
+
+      {% if is_paginated %}
+        <footer>
+          <ul class="pagination">
+            {% if page_obj.has_previous %}
+              <li><a href="?page=1">처음</a></li>
+              <li><a href="?page={{ page_obj.previous_page_number }}">이전</a></li>
+            {% endif %}
+
+            {% for num in page_obj.paginator.page_range %}
+              {% if page_obj.number == num %}
+                <li class="current">{{ num }}</li>
+              {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                <li><a href="?page={{ num }}">{{ num }}</a></li>
+              {% endif %}
+            {% endfor %}
+
+            {% if page_obj.has_next %}
+              <li><a href="?page={{ page_obj.next_page_number }}">다음</a></li>
+              <li><a href="?page={{ page_obj.paginator.num_pages }}">마지막</a></li>
+            {% endif %}
+          </ul>
+        </footer>
+      {% endif %}
+    </article>
+  </div>
+</main>
+{% endblock content %}

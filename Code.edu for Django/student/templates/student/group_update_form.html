@@ -1,0 +1,35 @@
+{% extends "student_base/base_with_header.html" %}
+
+{% load widget_tweaks %}
+
+{% block title %}그룹 설정 | Student{% endblock title %}
+
+{% block content %}
+<main class="profile-form">
+  <form method="post" enctype="multipart/form-data" autocomplete="off">
+    {% csrf_token %}
+    <div class="profile">
+      <div class="profile-pic cp-avatar large" style="background-image: url('{{ user.group_pic.url }}')"></div>
+      <div class="file">
+        {{ form.group_pic }}
+      </div>
+    </div>
+    <div class="nickname">
+      {{ form.group_name|add_class:"cp-input"|add_error_class:"error"|attr:"placeholder:그룹 이름" }}
+      {% for error in form.groupname.errors %}
+        <div class="error-message">{{ error }}</div>
+      {% endfor %}
+    </div>
+    <div class="content">
+      {{ form.description|add_class:"cp-input"|add_error_class:"error"|attr:"placeholder:그룹 소개" }}
+      {% for error in form.description.errors %}
+        <div class="error-message">{{ error }}</div>
+      {% endfor %}
+    </div>
+    <div class="buttons">
+      <a class="cp-button secondary cancel" href="{% url 'group-info' %}">취소</a>
+      <button class="cp-button" type="submit">완료</button>
+    </div>
+  </form>
+</main>
+{% endblock content %}

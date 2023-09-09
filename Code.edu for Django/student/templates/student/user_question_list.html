@@ -1,0 +1,62 @@
+{% extends "student_base/base_with_navbar.html" %}
+{% load static %}
+
+{% block title %}{{ user.nickname }}님의 질문 | Student{% endblock title %}
+
+{% block content %}
+<main class="site-body">
+  <div class="content-list max-content-width">
+    <div class="header">
+      <h2>{{ user.nickname }}님의 질문 ({{ paginator.count }})</h2>
+    </div>
+
+    <div class="contents">
+      {% for question in user_questions %}
+        <a href="{% url 'question-detail' question.id %}">
+          <div class="cp-card content">
+            <div class="thumb" style="background-image: url('{{ question.image1.url }}');"></div>
+            <div class="body">
+              <span class="cp-chip green">{{ question.restaurant_name }}</span>
+              <h2 class="title">{{ question.title }}</h2>
+              <date class="date">{{ question.dt_created|date:"Y년 n월 j일" }}</date>
+              <div class="metadata">
+                <div class="review-author">
+                  <div class="cp-avatar" style="background-image: url('{{ question.author.profile_pic.url }}')"></div>
+                  <span>{{ question.author.nickname }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </a>
+      {% empty %}
+        <p class="empty">아직 질문이 없어요 :(</p>
+      {% endfor %}
+    </div>
+
+    <div class="wrap-pagination">    
+      <a class="cp-ic-button circle backbutton" href="{% url 'profile' profile_user.id %}">프로필로 돌아가기</a>
+      {% if is_paginated %}
+        <ul class="pagination">
+          {% if page_obj.has_previous %}
+            <li><a href="?page=1">처음</a></li>
+            <li><a href="?page={{ page_obj.previous_page_number }}">이전</a></li>
+          {% endif %}
+
+          {% for num in page_obj.paginator.page_range %}
+            {% if page_obj.number == num %}
+              <li class="current">{{ num }}</li>
+            {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+              <li><a href="?page={{ num }}">{{ num }}</a></li>
+            {% endif %}
+          {% endfor %}
+
+          {% if page_obj.has_next %}
+            <li><a href="?page={{ page_obj.next_page_number }}">다음</a></li>
+            <li><a href="?page={{ page_obj.paginator.num_pages }}">마지막</a></li>
+          {% endif %}
+        </ul>
+      {% endif %}
+    </div>
+  </div>
+</main>
+{% endblock content %}
